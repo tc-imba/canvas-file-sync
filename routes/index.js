@@ -42,7 +42,10 @@ router.get('/', function (req, res, next) {
                         const files = JSON.parse(data);
                         for (let i = 0; i < files.length; i++) {
                             let file = files[i];
-                            console.log(file);
+                            console.log(file.id);
+                            console.log(file.display_name);
+                            console.log(file.filename);
+                            console.log(file.modified_at);
                         }
                     } else {
                         console.log(error);
