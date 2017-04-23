@@ -1,0 +1,19 @@
+{
+  "oauth": {
+    "host": "https://umji.famousedu.com/",
+    "authorize_path": "login/oauth2/auth",
+    "access_token_path": "login/oauth2/token",
+    "client_id": "10000000000001",
+    "client_secret": "ii2QAAyAEbtvz3AoMSJPekgmBVlvVOxKHhQSuc4j8sHHAUWkJ40FI9dDEfpw5b4I"
+  },
+  "server": {
+    "host": "45.76.213.89",
+    "port": "3000"
+  },
+  "database": {
+    "host": "localhost",
+    "user": "canvas_file_sync",
+    "password": "password",
+    "database": "canvas_file_sync"
+  }
+}
