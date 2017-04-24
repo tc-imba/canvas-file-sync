@@ -1,3 +1,9 @@
+// Node version under v7.6.0 doesn't support ES2017 feature: async/await
+if (process.version < 'v7.6.0') {
+    require('babel-register');
+    require('babel-polyfill');
+}
+
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');

@@ -6,7 +6,7 @@ const oauth = require('../lib/oauth');
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
-    const token = '8AZtPELzwSC4W1Fmieg3X2vdaiAb9KfDXoR498YrPNJcbbCgrfuGnbtWEDEGBURC';
+    const token = 'gFonShA7XOAPRe5mKJdxN2PSQttmgH4mDvoIJggmb25EJc57E7kqT8OS3aSEwAX6';
     const refresh_token = 'YwqISuKjWPlYRUFkrmi9jby7faudItfqTp09G8kPAU2m1NUNZq14wgNLYPVlqWP3';
 
     oauth.get('api/v1/courses', token, (error, data) => {
@@ -50,6 +50,13 @@ router.get('/auth', function (req, res, next) {
         });
     }
     //res.send('1');
+});
+
+router.get('/refresh', function (req, res, next) {
+    const refresh_token = 'YwqISuKjWPlYRUFkrmi9jby7faudItfqTp09G8kPAU2m1NUNZq14wgNLYPVlqWP3';
+    oauth.refreshToken(refresh_token, 'auth', () => {
+        res.redirect('/');
+    });
 });
 
 module.exports = router;

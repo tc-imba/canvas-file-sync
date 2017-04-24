@@ -1,11 +1,14 @@
 {
   "name": "canvas-file-sync",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.0.1",
   "scripts": {
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "babel-core": "^6.24.1",
+    "babel-polyfill": "^6.23.0",
+    "babel-preset-env": "^1.4.0",
+    "babel-register": "^6.24.1",
     "body-parser": "~1.17.1",
     "bootstrap": "^4.0.0-alpha.6",
     "config": "^1.25.1",
