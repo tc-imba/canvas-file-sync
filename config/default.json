@@ -11,9 +11,12 @@
     "port": "3000"
   },
   "database": {
-    "host": "localhost",
-    "user": "canvas_file_sync",
-    "password": "password",
-    "database": "canvas_file_sync"
+    "connection": {
+      "host": "localhost",
+      "user": "canvas_file_sync",
+      "password": "password",
+      "database": "canvas_file_sync"
+    },
+    "connection_limit": 10
   }
 }

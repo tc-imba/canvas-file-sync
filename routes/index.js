@@ -41,22 +41,4 @@ router.get('/', function (req, res, next) {
     res.render('index', {title: 'Express'});
 });
 
-router.get('/auth', function (req, res, next) {
-    if (!req.query.code) {
-        oauth.authorize(res, 'auth');
-    } else {
-        oauth.getToken(res, req, req.query.code, 'auth', () => {
-            res.redirect('/');
-        });
-    }
-    //res.send('1');
-});
-
-router.get('/refresh', function (req, res, next) {
-    const refresh_token = 'YwqISuKjWPlYRUFkrmi9jby7faudItfqTp09G8kPAU2m1NUNZq14wgNLYPVlqWP3';
-    oauth.refreshToken(refresh_token, 'auth', () => {
-        res.redirect('/');
-    });
-});
-
 module.exports = router;
