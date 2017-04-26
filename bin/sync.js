@@ -3,4 +3,8 @@
  */
 const sync = require('../lib/sync');
 
-sync.syncCourse(1);
+setTimeout(async () => {
+    await sync.syncCourse(1);
+    process.exit(0);
+}, 0);
+

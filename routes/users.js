@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const oauth = require('../lib/oauth');
 const user = require('../lib/user');
-const course = require('../lib/course')
+const course = require('../lib/course');
 
 const AUTH_URL = 'users/auth';
 
@@ -55,8 +55,7 @@ router.get('/refresh', async (req, res, next) => {
         const user_info = await user.getUser(req.session.user_id);
         if (!user_info) res.redirect('/users/auth');
         const refresh_token = user_info.refresh_token;
-
-        const data = await oauth.refreshToken(refresh_token, 'auth');
+        const data = await oauth.refreshToken(refresh_token, AUTH_URL);
         //console.log(data);
         if (!data.e) {
             // Success
