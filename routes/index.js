@@ -9,7 +9,7 @@ router.get('/', function (req, res, next) {
     const token = 'gFonShA7XOAPRe5mKJdxN2PSQttmgH4mDvoIJggmb25EJc57E7kqT8OS3aSEwAX6';
     const refresh_token = 'YwqISuKjWPlYRUFkrmi9jby7faudItfqTp09G8kPAU2m1NUNZq14wgNLYPVlqWP3';
 
-    oauth.get('api/v1/courses', token, (error, data) => {
+   /* oauth.get('api/v1/courses', token, (error, data) => {
         if (!error) {
             const courses = JSON.parse(data);
             for (let i = 0; i < courses.length; i++) {
@@ -34,7 +34,7 @@ router.get('/', function (req, res, next) {
         } else {
             console.log(error);
         }
-    });
+    });*/
 
 
     //console.log(req.session.access_token);
