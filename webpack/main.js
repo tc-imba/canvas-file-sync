@@ -4,6 +4,7 @@
 const webpack = require('webpack');
 const path = require('path');
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 let config = {
     entry: {
@@ -46,6 +47,12 @@ let config = {
             context: __dirname,
             manifest: path.resolve(__dirname, '../build/vendor.stable.manifest.json'),
         }),
+        new HtmlWebpackPlugin({
+            title: 'My App',
+            filename: 'views/index.html',
+            hash: true,
+            inject: true
+        })
         /*new webpack.DllReferencePlugin({
          context : __dirname,
          manifest: path.resolve(__dirname, '../build/vendor.beta.manifest.json'),
