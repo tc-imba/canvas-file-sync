@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node ./bin/www",
     "build:stable": "webpack -p --config ./webpack/vendor.stable.js",
-    "build": "webpack -p --config ./webpack/main.js"
+    "build": "webpack --config ./webpack/main.js"
   },
   "dependencies": {
     "babel-core": "^6.24.1",

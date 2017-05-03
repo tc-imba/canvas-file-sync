@@ -19,7 +19,7 @@ module.exports          = {
         test: /\.less$/,
         use : ['style-loader', 'css-loader', 'less-loader']
     }, {
-        test: /\.(png|jpg|cur)$/,
+        test: /\.(png|jpg|cur|gif)$/,
         use : 'url-loader?limit=25000&name=imgs/[name].[hash:6].[ext]'
     }, {
         test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
