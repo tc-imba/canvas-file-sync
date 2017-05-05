@@ -44,11 +44,14 @@ const FileTree = React.createClass({
             fileTree: {}
         }
     },
+    shouldComponentUpdate: function (nextProps, nextState) {
+        //console.log(this.state, nextState);
+        return this.props.fileTree.id !== nextProps.fileTree.id;
+    },
     render: () =>
         <div ref="fileTree"></div>,
     componentDidMount: function () {
         const $fileTree = $(this.refs.fileTree);
-        let preventBapLoop = true;
         $fileTree.jstree({
             'core': {
                 'data': (node, callback) => {
@@ -57,19 +60,15 @@ const FileTree = React.createClass({
                 worker: false
             }
         }).on('select_node.jstree', (e, selected) => {
-            if (!preventBapLoop)return;
-            preventBapLoop = false;
-            //console.log('Selected', selected);
-            $fileTree.jstree(true).deselect_all();
+            //console.log(selected);
             this.props.callbackChangeFolder(selected.node.id);
-            $fileTree.jstree(true).select_node(selected.node);
-            $fileTree.jstree(true).open_node(selected.node);
-            preventBapLoop = true;
         });
+
         console.log("Tree init");
     },
     componentDidUpdate: function () {
         $(this.refs.fileTree).jstree(true).refresh();
+        $(this.refs.fileTree).jstree(true).select_node(2);
         console.log("Tree update");
     }
 });
@@ -171,7 +170,8 @@ const FileView = React.createClass({
             folders: [],
             course: {
                 sync_time: null
-            }
+            },
+            processing: false
         }
     },
     processData: function (data) {
@@ -209,7 +209,7 @@ const FileView = React.createClass({
         });
         fileTree.text = data.course.name;
         fileTree.state = {
-            opened: true
+            opened: true,
         };
         data.course.sync_time = processTime(data.course.sync_time, 'YYYY-MM-DD HH:mm:ss');
         console.log(fileTree);
@@ -220,12 +220,22 @@ const FileView = React.createClass({
         }, data);
     },
     callbackChangeFolder: function (id) {
-        if (this.state.currentFolderId === id)return;
+        if (this.processing)return;
+        id = parseInt(id);
+        //console.log(this.state.currentFolderId, id);
+        if (!id || this.state.currentFolderId === id)return;
         if (this.state.folderMap.hasOwnProperty(id)) {
+            this.processing = true;
             for (let i in this.state.folderMap) {
                 this.state.folderMap[i].children = this.state.folderMap[i].__children;
             }
+            let fileTree = this.refs.fileTree;
+            let jstree = $(fileTree.refs.fileTree).jstree(true);
+            jstree.deselect_all();
+            jstree.select_node(id);
+            jstree.open_node(id);
             this.setState({currentFolderId: id});
+            this.processing = false;
         }
     },
     render: function () {
@@ -243,7 +253,8 @@ const FileView = React.createClass({
             <div className="row">
                 <div className="col-sm-3">
                     <CourseSelect courses={this.props.courses}/>
-                    <FileTree callbackChangeFolder={this.callbackChangeFolder} fileTree={this.state.fileTree}/>
+                    <FileTree callbackChangeFolder={this.callbackChangeFolder} fileTree={this.state.fileTree}
+                              ref="fileTree"/>
                 </div>
                 <div className="col-sm-9">
                     <h5>Last Sync Time: {this.state.course.sync_time || 'Unknown'}</h5>
@@ -254,6 +265,7 @@ const FileView = React.createClass({
         )
     },
     componentDidMount: function () {
+        this.processing = false;
         //this.processData();
         $.ajax({
             url: '/data/course?id=1',

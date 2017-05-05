@@ -15014,6 +15014,10 @@ var FileTree = React.createClass({
             fileTree: {}
         };
     },
+    shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
+        //console.log(this.state, nextState);
+        return this.props.fileTree.id !== nextProps.fileTree.id;
+    },
     render: function render() {
         return React.createElement('div', { ref: 'fileTree' });
     },
@@ -15021,7 +15025,6 @@ var FileTree = React.createClass({
         var _this = this;
 
         var $fileTree = $(this.refs.fileTree);
-        var preventBapLoop = true;
         $fileTree.jstree({
             'core': {
                 'data': function data(node, callback) {
@@ -15030,19 +15033,15 @@ var FileTree = React.createClass({
                 worker: false
             }
         }).on('select_node.jstree', function (e, selected) {
-            if (!preventBapLoop) return;
-            preventBapLoop = false;
-            //console.log('Selected', selected);
-            $fileTree.jstree(true).deselect_all();
+            //console.log(selected);
             _this.props.callbackChangeFolder(selected.node.id);
-            $fileTree.jstree(true).select_node(selected.node);
-            $fileTree.jstree(true).open_node(selected.node);
-            preventBapLoop = true;
         });
+
         console.log("Tree init");
     },
     componentDidUpdate: function componentDidUpdate() {
         $(this.refs.fileTree).jstree(true).refresh();
+        $(this.refs.fileTree).jstree(true).select_node(2);
         console.log("Tree update");
     }
 });
@@ -15209,7 +15208,8 @@ var FileView = React.createClass({
             folders: [],
             course: {
                 sync_time: null
-            }
+            },
+            processing: false
         };
     },
     processData: function processData(data) {
@@ -15261,12 +15261,22 @@ var FileView = React.createClass({
         }, data);
     },
     callbackChangeFolder: function callbackChangeFolder(id) {
-        if (this.state.currentFolderId === id) return;
+        if (this.processing) return;
+        id = parseInt(id);
+        //console.log(this.state.currentFolderId, id);
+        if (!id || this.state.currentFolderId === id) return;
         if (this.state.folderMap.hasOwnProperty(id)) {
+            this.processing = true;
             for (var i in this.state.folderMap) {
                 this.state.folderMap[i].children = this.state.folderMap[i].__children;
             }
+            var fileTree = this.refs.fileTree;
+            var jstree = $(fileTree.refs.fileTree).jstree(true);
+            jstree.deselect_all();
+            jstree.select_node(id);
+            jstree.open_node(id);
             this.setState({ currentFolderId: id });
+            this.processing = false;
         }
     },
     render: function render() {
@@ -15287,7 +15297,8 @@ var FileView = React.createClass({
                 'div',
                 { className: 'col-sm-3' },
                 React.createElement(CourseSelect, { courses: this.props.courses }),
-                React.createElement(FileTree, { callbackChangeFolder: this.callbackChangeFolder, fileTree: this.state.fileTree })
+                React.createElement(FileTree, { callbackChangeFolder: this.callbackChangeFolder, fileTree: this.state.fileTree,
+                    ref: 'fileTree' })
             ),
             React.createElement(
                 'div',
@@ -15306,6 +15317,7 @@ var FileView = React.createClass({
     componentDidMount: function componentDidMount() {
         var _this3 = this;
 
+        this.processing = false;
         //this.processData();
         $.ajax({
             url: '/data/course?id=1',
