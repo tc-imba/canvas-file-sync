@@ -47,13 +47,24 @@ const FileTree = React.createClass({
     render: () =>
         <div ref="fileTree"></div>,
     componentDidMount: function () {
-        $(this.refs.fileTree).jstree({
+        const $fileTree = $(this.refs.fileTree);
+        let preventBapLoop = true;
+        $fileTree.jstree({
             'core': {
                 'data': (node, callback) => {
                     callback(this.props.fileTree);
                 },
                 worker: false
             }
+        }).on('select_node.jstree', (e, selected) => {
+            if (!preventBapLoop)return;
+            preventBapLoop = false;
+            //console.log('Selected', selected);
+            $fileTree.jstree(true).deselect_all();
+            this.props.callbackChangeFolder(selected.node.id);
+            $fileTree.jstree(true).select_node(selected.node);
+            $fileTree.jstree(true).open_node(selected.node);
+            preventBapLoop = true;
         });
         console.log("Tree init");
     },
@@ -209,6 +220,7 @@ const FileView = React.createClass({
         }, data);
     },
     callbackChangeFolder: function (id) {
+        if (this.state.currentFolderId === id)return;
         if (this.state.folderMap.hasOwnProperty(id)) {
             for (let i in this.state.folderMap) {
                 this.state.folderMap[i].children = this.state.folderMap[i].__children;
