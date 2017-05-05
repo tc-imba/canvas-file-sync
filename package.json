@@ -32,9 +32,11 @@
     "oauth": "^0.9.15",
     "qiniu": "^6.1.13",
     "serve-favicon": "~2.4.2",
+    "silly-datetime": "^0.1.2",
     "winston": "^2.3.1"
   },
   "devDependencies": {
+    "babel-preset-es2015-rollup": "^3.0.0",
     "bootstrap": "^4.0.0-alpha.6",
     "bootstrap-loader": "^2.0.0",
     "css-loader": "^0.28.0",
@@ -42,6 +44,7 @@
     "expose-loader": "^0.7.3",
     "extract-text-webpack-plugin": "^2.1.0",
     "file-loader": "^0.11.1",
+    "filesize": "^3.5.9",
     "font-awesome": "^4.7.0",
     "font-awesome-webpack": "0.0.5-beta.2",
     "html-webpack-plugin": "^2.28.0",

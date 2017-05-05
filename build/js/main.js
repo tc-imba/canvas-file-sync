@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "build/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 10);
+/******/ 	return __webpack_require__(__webpack_require__.s = 13);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -80,6 +80,290 @@ module.exports = (__webpack_require__(0))(5)
 
 /***/ }),
 /* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/**
+ * Created by liu on 17-2-13.
+ */
+
+var iconList = {
+    "mp3": "audio",
+    "wma": "audio",
+    "wav": "audio",
+    "aac": "audio",
+    "mid": "audio",
+    "c": "code",
+    "h": "code",
+    "cpp": "code",
+    "cc": "code",
+    "hpp": "code",
+    "py": "code",
+    "html": "code",
+    "htm": "code",
+    "js": "code",
+    "css": "code",
+    "php": "code",
+    "jsp": "code",
+    "asp": "code",
+    "aspx": "code",
+    "java": "code",
+    "json": "code",
+    "yaml": "code",
+    "xml": "code",
+    "sql": "code",
+    "m": "code",
+    "mm": "code",
+    "lua": "code",
+    "rb": "code",
+    "as": "code",
+    "xls": "excel",
+    "xlsx": "excel",
+    "csv": "excel",
+    "slk": "excel",
+    "ods": "excel",
+    "bmp": "image",
+    "png": "image",
+    "jpg": "image",
+    "jpeg": "image",
+    "gif": "image",
+    "tiff": "image",
+    "mp4": "movie",
+    "mpeg": "movie",
+    "avi": "movie",
+    "mov": "movie",
+    "wmv": "movie",
+    "mkv": "movie",
+    "flv": "movie",
+    "rmvb": "movie",
+    "3gp": "movie",
+    "pdf": "pdf",
+    "ppt": "powerpoint",
+    "pps": "powerpoint",
+    "pptx": "powerpoint",
+    "ppsx": "powerpoint",
+    "odp": "powerpoint",
+    "txt": "text",
+    "md": "text",
+    "rst": "text",
+    "doc": "word",
+    "docx": "word",
+    "rtf": "word",
+    "odt": "word",
+    "rar": "zip",
+    "zip": "zip",
+    "iso": "zip",
+    "7z": "zip",
+    "tar": "zip",
+    "xz": "zip",
+    "gz": "zip",
+    "bz2": "zip"
+};
+
+module.exports = {
+    getIcon: function getIcon() {
+        var suffix = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+
+        if (iconList.hasOwnProperty(suffix)) {
+            return "fa-file-" + iconList[suffix] + "-o";
+        }
+        return 'fa-file-o';
+    },
+    processFile: function processFile() {
+        var filename = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+
+        var suffix = filename.match(/\.[\w]+$/);
+        if (suffix && suffix.length > 0) {
+            return module.exports.getIcon(suffix[0].replace('.', ''));
+        }
+        return module.exports.getIcon();
+    },
+    processArray: function processArray(arr) {
+        for (var i = 0; i < arr.length; i++) {
+            arr[i].icon = module.exports.processFile(arr[i].name);
+        }
+    }
+};
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+
+/**
+ * filesize
+ *
+ * @copyright 2017 Jason Mulligan <jason.mulligan@avoidwork.com>
+ * @license BSD-3-Clause
+ * @version 3.5.9
+ */
+
+(function (global) {
+	var b = /^(b|B)$/,
+	    symbol = {
+		iec: {
+			bits: ["b", "Kib", "Mib", "Gib", "Tib", "Pib", "Eib", "Zib", "Yib"],
+			bytes: ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"]
+		},
+		jedec: {
+			bits: ["b", "Kb", "Mb", "Gb", "Tb", "Pb", "Eb", "Zb", "Yb"],
+			bytes: ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
+		}
+	},
+	    fullform = {
+		iec: ["", "kibi", "mebi", "gibi", "tebi", "pebi", "exbi", "zebi", "yobi"],
+		jedec: ["", "kilo", "mega", "giga", "tera", "peta", "exa", "zetta", "yotta"]
+	};
+
+	/**
+  * filesize
+  *
+  * @method filesize
+  * @param  {Mixed}   arg        String, Int or Float to transform
+  * @param  {Object}  descriptor [Optional] Flags
+  * @return {String}             Readable file size String
+  */
+	function filesize(arg) {
+		var descriptor = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+		var result = [],
+		    val = 0,
+		    e = void 0,
+		    base = void 0,
+		    bits = void 0,
+		    ceil = void 0,
+		    full = void 0,
+		    fullforms = void 0,
+		    neg = void 0,
+		    num = void 0,
+		    output = void 0,
+		    round = void 0,
+		    unix = void 0,
+		    spacer = void 0,
+		    standard = void 0,
+		    symbols = void 0;
+
+		if (isNaN(arg)) {
+			throw new Error("Invalid arguments");
+		}
+
+		bits = descriptor.bits === true;
+		unix = descriptor.unix === true;
+		base = descriptor.base || 2;
+		round = descriptor.round !== undefined ? descriptor.round : unix ? 1 : 2;
+		spacer = descriptor.spacer !== undefined ? descriptor.spacer : unix ? "" : " ";
+		symbols = descriptor.symbols || descriptor.suffixes || {};
+		standard = base === 2 ? descriptor.standard || "jedec" : "jedec";
+		output = descriptor.output || "string";
+		full = descriptor.fullform === true;
+		fullforms = descriptor.fullforms instanceof Array ? descriptor.fullforms : [];
+		e = descriptor.exponent !== undefined ? descriptor.exponent : -1;
+		num = Number(arg);
+		neg = num < 0;
+		ceil = base > 2 ? 1000 : 1024;
+
+		// Flipping a negative number to determine the size
+		if (neg) {
+			num = -num;
+		}
+
+		// Determining the exponent
+		if (e === -1 || isNaN(e)) {
+			e = Math.floor(Math.log(num) / Math.log(ceil));
+
+			if (e < 0) {
+				e = 0;
+			}
+		}
+
+		// Exceeding supported length, time to reduce & multiply
+		if (e > 8) {
+			e = 8;
+		}
+
+		// Zero is now a special case because bytes divide by 1
+		if (num === 0) {
+			result[0] = 0;
+			result[1] = unix ? "" : symbol[standard][bits ? "bits" : "bytes"][e];
+		} else {
+			val = num / (base === 2 ? Math.pow(2, e * 10) : Math.pow(1000, e));
+
+			if (bits) {
+				val = val * 8;
+
+				if (val >= ceil && e < 8) {
+					val = val / ceil;
+					e++;
+				}
+			}
+
+			result[0] = Number(val.toFixed(e > 0 ? round : 0));
+			result[1] = base === 10 && e === 1 ? bits ? "kb" : "kB" : symbol[standard][bits ? "bits" : "bytes"][e];
+
+			if (unix) {
+				result[1] = standard === "jedec" ? result[1].charAt(0) : e > 0 ? result[1].replace(/B$/, "") : result[1];
+
+				if (b.test(result[1])) {
+					result[0] = Math.floor(result[0]);
+					result[1] = "";
+				}
+			}
+		}
+
+		// Decorating a 'diff'
+		if (neg) {
+			result[0] = -result[0];
+		}
+
+		// Applying custom symbol
+		result[1] = symbols[result[1]] || result[1];
+
+		// Returning Array, Object, or String (default)
+		if (output === "array") {
+			return result;
+		}
+
+		if (output === "exponent") {
+			return e;
+		}
+
+		if (output === "object") {
+			return { value: result[0], suffix: result[1], symbol: result[1] };
+		}
+
+		if (full) {
+			result[1] = fullforms[e] ? fullforms[e] : fullform[standard][e] + (bits ? "bit" : "byte") + (result[0] === 1 ? "" : "s");
+		}
+
+		return result.join(spacer);
+	}
+
+	// Partial application for functional programming
+	filesize.partial = function (opt) {
+		return function (arg) {
+			return filesize(arg, opt);
+		};
+	};
+
+	// CommonJS, AMD, script tag
+	if (true) {
+		module.exports = filesize;
+	} else if (typeof define === "function" && define.amd) {
+		define(function () {
+			return filesize;
+		});
+	} else {
+		global.filesize = filesize;
+	}
+})(typeof window !== "undefined" ? window : global);
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9116,7 +9400,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 3 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14479,43 +14763,195 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = (__webpack_require__(0))(78)
+"use strict";
+
+
+/**
+ * 将输入的任意对象转换成 Date，如果装换失败将返回当前时间
+ * @param  {any} datetime 需要被格式化的时间
+ * @return {Date}         转换好的 Date
+ */
+
+function getDateObject(datetime) {
+  var t = datetime instanceof Date ? datetime : new Date(datetime);
+  if (!t.getDate()) {
+    t = new Date();
+  }
+  return t;
+}
+
+/**
+ * 格式化时间
+ * @param  {Date}   datetime  需要被格式化的时间
+ * @param  {string} formatStr 格式化字符串，默认为 'YYYY-MM-DD HH:mm:ss'
+ * @return {string}           格式化后的时间字符串
+ */
+function format(datetime, formatStr) {
+  var t = getDateObject(datetime);
+  var hours = undefined,
+      o = undefined,
+      i = 0;
+  formatStr = formatStr || 'YYYY-MM-DD HH:mm:ss';
+  hours = t.getHours();
+  o = [['M+', t.getMonth() + 1], ['D+', t.getDate()],
+  // H 24小时制
+  ['H+', hours],
+  // h 12小时制
+  ['h+', hours > 12 ? hours - 12 : hours], ['m+', t.getMinutes()], ['s+', t.getSeconds()]];
+  // 替换 Y
+  if (/(Y+)/.test(formatStr)) {
+    formatStr = formatStr.replace(RegExp.$1, (t.getFullYear() + '').substr(4 - RegExp.$1.length));
+  }
+  // 替换 M, D, H, h, m, s
+  for (; i < o.length; i++) {
+    if (new RegExp('(' + o[i][0] + ')').test(formatStr)) {
+      formatStr = formatStr.replace(RegExp.$1, RegExp.$1.length === 1 ? o[i][1] : ('00' + o[i][1]).substr(('' + o[i][1]).length));
+    }
+  }
+  // 替换 a/A 为 am, pm
+  return formatStr.replace(/a/ig, hours > 11 ? 'pm' : 'am');
+}
+
+/**
+ * CONST and VAR for .fromNow
+ */
+// 预设语言：英语
+var LOCALE_EN = {
+  future: 'in %s',
+  past: '%s ago',
+  s: 'a few seconds',
+  mm: '%s minutes',
+  hh: '%s hours',
+  dd: '%s days',
+  MM: '%s months',
+  yy: '%s years'
+};
+// 预设语言：简体中文
+var LOCALE_ZH_CN = {
+  future: '%s内',
+  past: '%s前',
+  s: '几秒',
+  mm: '%s分钟',
+  hh: '%s小时',
+  dd: '%s天',
+  MM: '%s月',
+  yy: '%s年'
+};
+// 当前本地化语言对象
+var _curentLocale = undefined;
+
+/**
+ * 修改本地化语言
+ * @param  {string|Object}   string: 预设语言 `zh-cn` 或 `en`；Object: 自定义 locate 对象
+ */
+function locate(arg) {
+  var newLocale = undefined,
+      prop = undefined;
+  if (typeof arg === 'string') {
+    newLocale = arg === 'zh-cn' ? LOCALE_ZH_CN : LOCALE_EN;
+  } else {
+    newLocale = arg;
+  }
+  if (!_curentLocale) {
+    _curentLocale = {};
+  }
+  for (prop in newLocale) {
+    if (newLocale.hasOwnProperty(prop) && typeof newLocale[prop] === 'string') {
+      _curentLocale[prop] = newLocale[prop];
+    }
+  }
+}
+
+/**
+ * CONST for .fromNow
+ */
+// 各计算区间
+var DET_STD = [['yy', 31536e6], // 1000 * 60 * 60 * 24 * 365 一年月按 365 天算
+['MM', 2592e6], // 1000 * 60 * 60 * 24 * 30 一个月按 30 天算
+['dd', 864e5], // 1000 * 60 * 60 * 24
+['hh', 36e5], // 1000 * 60 * 60
+['mm', 6e4], // 1000 * 60
+['s', 0]];
+
+/**
+ * 计算给出时间和当前时间的时间距离
+ * @param  {Date}   datetime 需要计算的时间
+ * @return {string}          时间距离
+ */
+// 只要大于等于 0 都是秒
+function fromNow(datetime) {
+  if (!_curentLocale) {
+    // 初始化本地化语言为 en
+    locate('');
+  }
+  var det = +new Date() - +getDateObject(datetime);
+  var format = undefined,
+      str = undefined,
+      i = 0,
+      detDef = undefined,
+      detDefVal = undefined;
+  if (det < 0) {
+    format = _curentLocale.future;
+    det = -det;
+  } else {
+    format = _curentLocale.past;
+  }
+  for (; i < DET_STD.length; i++) {
+    detDef = DET_STD[i];
+    detDefVal = detDef[1];
+    if (det >= detDefVal) {
+      str = _curentLocale[detDef[0]].replace('%s', parseInt(det / detDefVal, 0) || 1);
+      break;
+    }
+  }
+  return format.replace('%s', str);
+}
+
+exports.format = format;
+exports.locate = locate;
+exports.fromNow = fromNow;
 
 /***/ }),
 /* 7 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-module.exports = (__webpack_require__(0))(79)
+// removed by extract-text-webpack-plugin
 
 /***/ }),
 /* 8 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-module.exports = (__webpack_require__(0))(80)
+// removed by extract-text-webpack-plugin
 
 /***/ }),
 /* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = (__webpack_require__(0))(81)
+module.exports = (__webpack_require__(0))(78)
 
 /***/ }),
 /* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = (__webpack_require__(0))(79)
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = (__webpack_require__(0))(80)
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = (__webpack_require__(0))(81)
+
+/***/ }),
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14524,16 +14960,20 @@ module.exports = (__webpack_require__(0))(81)
 /**
  * Created by liu on 17-4-30.
  */
-var React = __webpack_require__(9);
-var ReactDOM = __webpack_require__(8);
+var React = __webpack_require__(12);
+var ReactDOM = __webpack_require__(11);
 var $ = __webpack_require__(1);
-__webpack_require__(6);
-__webpack_require__(7);
+var filesize = __webpack_require__(3);
+var fileicon = __webpack_require__(2);
+var sillydatetime = __webpack_require__(6);
 
-__webpack_require__(2);
+__webpack_require__(9);
+__webpack_require__(10);
+
 __webpack_require__(4);
-__webpack_require__(3);
+__webpack_require__(7);
 __webpack_require__(5);
+__webpack_require__(8);
 
 var Header = React.createClass({
     displayName: 'Header',
@@ -14542,7 +14982,7 @@ var Header = React.createClass({
         return React.createElement(
             'h1',
             { className: 'text-center' },
-            'Header'
+            'Canvas File Sync'
         );
     }
 });
@@ -14569,18 +15009,6 @@ var CourseSelect = React.createClass({
 var FileTree = React.createClass({
     displayName: 'FileTree',
 
-    callbackTreeData: function callbackTreeData(node, callback) {
-        var children = [];
-        this.props.files.map(function (file) {
-            children.push({ "text": file });
-        });
-        var data = [{
-            "text": "Course Name",
-            "state": { "opened": true },
-            children: children
-        }];
-        callback(data);
-    },
     getDefaultProps: function getDefaultProps() {
         return {
             fileTree: {}
@@ -14618,7 +15046,13 @@ var File = React.createClass({
             React.createElement(
                 'td',
                 null,
-                this.props.file.display_name
+                React.createElement('i', { className: "fa fa-fw " + this.props.file.icon, 'aria-hidden': 'true' }),
+                '\xA0',
+                React.createElement(
+                    'a',
+                    { href: this.props.file.url },
+                    this.props.file.display_name
+                )
             ),
             React.createElement(
                 'td',
@@ -14632,7 +15066,7 @@ var File = React.createClass({
             ),
             React.createElement(
                 'td',
-                null,
+                { className: 'text-right' },
                 this.props.file.size
             )
         );
@@ -14642,21 +15076,53 @@ var File = React.createClass({
 var Folder = React.createClass({
     displayName: 'Folder',
 
+    onClick: function onClick() {
+        this.props.callbackChangeFolder(this.props.folder.id);
+    },
     render: function render() {
-        return React.createElement(
-            'tr',
-            null,
-            React.createElement(
-                'td',
+        if (this.props.parent) {
+            return React.createElement(
+                'tr',
                 null,
-                this.props.folder.name
-            ),
-            React.createElement(
-                'td',
+                React.createElement(
+                    'td',
+                    null,
+                    React.createElement('i', { className: 'fa fa-fw fa-folder-open-o', 'aria-hidden': 'true' }),
+                    '\xA0',
+                    React.createElement(
+                        'a',
+                        { href: 'javascript:void(0);', onClick: this.onClick },
+                        '..'
+                    )
+                )
+            );
+        } else {
+            return React.createElement(
+                'tr',
                 null,
-                this.props.folder.created_at
-            )
-        );
+                React.createElement(
+                    'td',
+                    null,
+                    React.createElement('i', { className: 'fa fa-fw fa-folder-o', 'aria-hidden': 'true' }),
+                    '\xA0',
+                    React.createElement(
+                        'a',
+                        { href: 'javascript:void(0);', onClick: this.onClick },
+                        this.props.folder.name
+                    )
+                ),
+                React.createElement(
+                    'td',
+                    null,
+                    this.props.folder.created_at
+                ),
+                React.createElement(
+                    'td',
+                    null,
+                    this.props.folder.updated_at
+                )
+            );
+        }
     }
 });
 
@@ -14664,6 +15130,8 @@ var FileList = React.createClass({
     displayName: 'FileList',
 
     render: function render() {
+        var _this2 = this;
+
         return React.createElement(
             'table',
             { className: 'table' },
@@ -14690,7 +15158,7 @@ var FileList = React.createClass({
                     ),
                     React.createElement(
                         'th',
-                        null,
+                        { className: 'text-right' },
                         'Size'
                     )
                 )
@@ -14698,12 +15166,14 @@ var FileList = React.createClass({
             React.createElement(
                 'tbody',
                 null,
-                this.props.folder.children.map(function (folder) {
-                    return React.createElement(Folder, { folder: folder });
-                }),
-                this.props.folder.files.map(function (file) {
+                this.props.parentFolder.id ? React.createElement(Folder, { callbackChangeFolder: this.props.callbackChangeFolder, folder: this.props.parentFolder,
+                    parent: true }) : '',
+                this.props.folder.children ? this.props.folder.children.map(function (folder) {
+                    return React.createElement(Folder, { callbackChangeFolder: _this2.props.callbackChangeFolder, folder: folder });
+                }) : '',
+                this.props.folder.files ? this.props.folder.files.map(function (file) {
                     return React.createElement(File, { file: file });
-                })
+                }) : ''
             )
         );
     }
@@ -14714,10 +15184,9 @@ var FileView = React.createClass({
 
     getDefaultProps: function getDefaultProps() {
         return {
-            files: [1, 2, 3],
             courses: ['Course 1', 'Course 2'],
             fileTree: {
-                text: 'Course Name',
+                text: '',
                 children: [],
                 files: []
             }
@@ -14725,22 +15194,30 @@ var FileView = React.createClass({
     },
     getInitialState: function getInitialState() {
         return {
-            data: {
-                files: [{ display_name: 'A.jpg', folder_id: 2, filename: '12345.jpg' }, { display_name: 'B.jpg', folder_id: 8, filename: '12345.jpg' }, { display_name: 'C.jpg', folder_id: 8, filename: '12345.jpg' }, { display_name: 'D.jpg', folder_id: 6, filename: '12345.jpg' }, { display_name: 'E.jpg', folder_id: 6, filename: '12345.jpg' }, { display_name: 'F.jpg', folder_id: 2, filename: '12345.jpg' }, { display_name: 'F.jpg', folder_id: 22, filename: '12345.jpg' }],
-                folders: [{ id: 2, parent_folder_id: null, name: 'Folder 2' }, { id: 6, parent_folder_id: 2, name: 'Folder 6' }, { id: 8, parent_folder_id: 2, name: 'Folder 8' }, { id: 22, parent_folder_id: 6, name: 'Folder 22' }]
+            files: [],
+            folders: [],
+            course: {
+                sync_time: null
             }
         };
     },
-    processData: function processData() {
+    processData: function processData(data) {
+        var processTime = function processTime(str) {
+            var format = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'YYYY-MM-DD HH:mm';
+            return sillydatetime.format(new Date(str), format);
+        };
         var fileTree = this.props.fileTree;
         var folderMap = {};
-        this.state.data.folders.map(function (folder) {
+        data.folders.map(function (folder) {
             if (!folderMap.hasOwnProperty(folder.id)) {
                 folderMap[folder.id] = { children: [] };
             }
-            folderMap[folder.id].text = folderMap[folder.id].name = folder.name;
-            folderMap[folder.id].id = folder.id;
+            folder.created_at = processTime(folder.created_at);
+            folder.updated_at = processTime(folder.updated_at);
+            $.extend(folderMap[folder.id], folder);
+            folderMap[folder.id].text = folder.name;
             folderMap[folder.id].files = [];
+            folderMap[folder.id].__children = folderMap[folder.id].children;
             if (folder.parent_folder_id) {
                 if (!folderMap.hasOwnProperty(folder.parent_folder_id)) {
                     folderMap[folder.parent_folder_id] = { children: [] };
@@ -14750,68 +15227,141 @@ var FileView = React.createClass({
                 fileTree = folderMap[folder.id];
             }
         });
-        this.state.data.files.map(function (file) {
+        data.files.map(function (file) {
+            file.url = data.download_host + file.filename + '?attname=' + file.display_name;
+            file.size = filesize(file.size);
+            file.icon = fileicon.processFile(file.filename);
+            file.created_at = processTime(file.created_at);
+            file.updated_at = processTime(file.updated_at);
             if (folderMap.hasOwnProperty(file.folder_id)) {
                 folderMap[file.folder_id].files.push(file);
             }
         });
+        fileTree.text = data.course.name;
         fileTree.state = {
             opened: true
         };
+        data.course.sync_time = processTime(data.course.sync_time, 'YYYY-MM-DD HH:mm:ss');
         console.log(fileTree);
-        this.setState({
+        return $.extend({
             fileTree: fileTree,
             folderMap: folderMap,
             currentFolderId: fileTree.id
-        });
+        }, data);
+    },
+    callbackChangeFolder: function callbackChangeFolder(id) {
+        if (this.state.folderMap.hasOwnProperty(id)) {
+            for (var i in this.state.folderMap) {
+                this.state.folderMap[i].children = this.state.folderMap[i].__children;
+            }
+            this.setState({ currentFolderId: id });
+        }
     },
     render: function render() {
+        var folder = void 0;
+        var parentFolder = {};
+        if (this.state.currentFolderId) {
+            folder = this.state.folderMap[this.state.currentFolderId];
+            if (folder.parent_folder_id) {
+                parentFolder = this.state.folderMap[folder.parent_folder_id];
+            }
+        } else {
+            folder = this.props.fileTree;
+        }
         return React.createElement(
             'div',
             { className: 'row' },
             React.createElement(
                 'div',
-                { className: 'col-sm-4' },
+                { className: 'col-sm-3' },
                 React.createElement(CourseSelect, { courses: this.props.courses }),
-                React.createElement(FileTree, { fileTree: this.state.fileTree })
+                React.createElement(FileTree, { callbackChangeFolder: this.callbackChangeFolder, fileTree: this.state.fileTree })
             ),
             React.createElement(
                 'div',
-                { className: 'col-sm-8' },
-                React.createElement(FileList, { folder: this.state.currentFolderId ? this.state.folderMap[this.state.currentFolderId] : this.props.fileTree })
+                { className: 'col-sm-9' },
+                React.createElement(
+                    'h5',
+                    null,
+                    'Last Sync Time: ',
+                    this.state.course.sync_time || 'Unknown'
+                ),
+                React.createElement(FileList, { callbackChangeFolder: this.callbackChangeFolder,
+                    folder: folder, parentFolder: parentFolder })
             )
         );
     },
     componentDidMount: function componentDidMount() {
-        this.processData();
-    }
+        var _this3 = this;
+
+        //this.processData();
+        $.ajax({
+            url: '/data/course?id=1',
+            type: 'GET',
+            dataType: 'json',
+            success: function success(data) {
+                data = _this3.processData(data);
+                console.log(data);
+                _this3.setState(data);
+            }
+        });
+    },
+    componentDidUpdate: function componentDidUpdate() {}
 });
 
 var App = React.createClass({
     displayName: 'App',
 
+    getInitialState: function getInitialState() {
+        return {
+            course: {},
+            files: [],
+            folders: []
+        };
+    },
     render: function render() {
         return React.createElement(
             'div',
             { className: 'app-body container' },
             React.createElement(Header, null),
-            React.createElement(FileView, { ref: 'fileView' })
+            React.createElement(FileView, null)
         );
     },
-
-    componentDidMount: function componentDidMount() {
-        /*setTimeout(() => {
-         this.refs.fileView.setState({
-         data: {
-         files: [1, 2]
-         }
-         })
-         }, 1000);*/
-    }
+    componentDidMount: function componentDidMount() {}
 
 });
 
 ReactDOM.render(React.createElement(App, null), document.getElementById('body'));
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var g;
+
+// This works in non-strict mode
+g = function () {
+	return this;
+}();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1, eval)("this");
+} catch (e) {
+	// This works if the window reference is available
+	if ((typeof window === "undefined" ? "undefined" : _typeof(window)) === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
 
 /***/ })
 /******/ ]);

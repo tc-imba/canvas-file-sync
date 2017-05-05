@@ -4,6 +4,10 @@
 const React = require('react');
 const ReactDOM = require('react-dom');
 const $ = require('jquery');
+const filesize = require('filesize');
+const fileicon = require('../lib/file-icon');
+const sillydatetime = require('silly-datetime');
+
 require('bootstrap-loader');
 require('font-awesome-webpack');
 
@@ -14,7 +18,7 @@ require('select2/dist/css/select2.css');
 
 const Header = React.createClass({
     render: () =>
-        <h1 className="text-center">Header</h1>
+        <h1 className="text-center">Canvas File Sync</h1>
 });
 
 const CourseSelect = React.createClass({
@@ -35,18 +39,6 @@ const CourseSelect = React.createClass({
 });
 
 const FileTree = React.createClass({
-    callbackTreeData: function (node, callback) {
-        let children = [];
-        this.props.files.map(file => {
-            children.push({"text": file});
-        });
-        let data = [{
-            "text": "Course Name",
-            "state": {"opened": true},
-            children: children
-        }];
-        callback(data);
-    },
     getDefaultProps: function () {
         return {
             fileTree: {}
@@ -75,23 +67,45 @@ const File = React.createClass({
     render: function () {
         return (
             <tr>
-                <td>{this.props.file.display_name}</td>
+                <td>
+                    <i className={"fa fa-fw " + this.props.file.icon} aria-hidden="true"></i>&nbsp;
+                    <a href={this.props.file.url}>{this.props.file.display_name}</a>
+                </td>
                 <td>{this.props.file.created_at}</td>
                 <td>{this.props.file.updated_at}</td>
-                <td>{this.props.file.size}</td>
+                <td className="text-right">{this.props.file.size}</td>
             </tr>
         )
     }
 });
 
 const Folder = React.createClass({
+    onClick: function () {
+        this.props.callbackChangeFolder(this.props.folder.id);
+    },
     render: function () {
-        return (
-            <tr>
-                <td>{this.props.folder.name}</td>
-                <td>{this.props.folder.created_at}</td>
-            </tr>
-        )
+        if (this.props.parent) {
+            return (
+                <tr>
+                    <td>
+                        <i className="fa fa-fw fa-folder-open-o" aria-hidden="true"></i>&nbsp;
+                        <a href="javascript:void(0);" onClick={this.onClick}>..</a>
+                    </td>
+                </tr>
+            )
+        } else {
+            return (
+                <tr>
+                    <td>
+                        <i className="fa fa-fw fa-folder-o" aria-hidden="true"></i>&nbsp;
+                        <a href="javascript:void(0);" onClick={this.onClick}>{this.props.folder.name }</a>
+                    </td>
+                    <td>{this.props.folder.created_at}</td>
+                    <td>{this.props.folder.updated_at}</td>
+                </tr>
+            )
+        }
+
     }
 });
 
@@ -104,19 +118,24 @@ const FileList = React.createClass({
                     <th>Name</th>
                     <th>Time Created</th>
                     <th>Time Updated</th>
-                    <th>Size</th>
+                    <th className="text-right">Size</th>
                 </tr>
                 </thead>
                 <tbody>
                 {
-                    this.props.folder.children.map(folder => {
-                        return <Folder folder={folder}/>
-                    })
+                    this.props.parentFolder.id ?
+                        <Folder callbackChangeFolder={this.props.callbackChangeFolder} folder={this.props.parentFolder}
+                                parent={true}/> : ''
                 }
                 {
-                    this.props.folder.files.map(file => {
+                    this.props.folder.children ? this.props.folder.children.map(folder => {
+                        return <Folder callbackChangeFolder={this.props.callbackChangeFolder} folder={folder}/>
+                    }) : ''
+                }
+                {
+                    this.props.folder.files ? this.props.folder.files.map(file => {
                         return <File file={file}/>
-                    })
+                    }) : ''
                 }
                 </tbody>
             </table>
@@ -127,10 +146,9 @@ const FileList = React.createClass({
 const FileView = React.createClass({
     getDefaultProps: function () {
         return {
-            files: [1, 2, 3],
             courses: ['Course 1', 'Course 2'],
-            fileTree : {
-                text: 'Course Name',
+            fileTree: {
+                text: '',
                 children: [],
                 files: []
             }
@@ -138,35 +156,27 @@ const FileView = React.createClass({
     },
     getInitialState: function () {
         return {
-            data: {
-                files: [
-                    {display_name: 'A.jpg', folder_id: 2, filename: '12345.jpg'},
-                    {display_name: 'B.jpg', folder_id: 8, filename: '12345.jpg'},
-                    {display_name: 'C.jpg', folder_id: 8, filename: '12345.jpg'},
-                    {display_name: 'D.jpg', folder_id: 6, filename: '12345.jpg'},
-                    {display_name: 'E.jpg', folder_id: 6, filename: '12345.jpg'},
-                    {display_name: 'F.jpg', folder_id: 2, filename: '12345.jpg'},
-                    {display_name: 'F.jpg', folder_id: 22, filename: '12345.jpg'}
-                ],
-                folders: [
-                    {id: 2, parent_folder_id: null, name: 'Folder 2'},
-                    {id: 6, parent_folder_id: 2, name: 'Folder 6'},
-                    {id: 8, parent_folder_id: 2, name: 'Folder 8'},
-                    {id: 22, parent_folder_id: 6, name: 'Folder 22'}
-                ]
+            files: [],
+            folders: [],
+            course: {
+                sync_time: null
             }
         }
     },
-    processData: function () {
+    processData: function (data) {
+        const processTime = (str, format = 'YYYY-MM-DD HH:mm') => sillydatetime.format(new Date(str), format);
         let fileTree = this.props.fileTree;
         let folderMap = {};
-        this.state.data.folders.map(folder => {
+        data.folders.map(folder => {
             if (!folderMap.hasOwnProperty(folder.id)) {
                 folderMap[folder.id] = {children: []};
             }
-            folderMap[folder.id].text = folderMap[folder.id].name = folder.name;
-            folderMap[folder.id].id = folder.id;
+            folder.created_at = processTime(folder.created_at);
+            folder.updated_at = processTime(folder.updated_at);
+            $.extend(folderMap[folder.id], folder);
+            folderMap[folder.id].text = folder.name;
             folderMap[folder.id].files = [];
+            folderMap[folder.id].__children = folderMap[folder.id].children;
             if (folder.parent_folder_id) {
                 if (!folderMap.hasOwnProperty(folder.parent_folder_id)) {
                     folderMap[folder.parent_folder_id] = {children: []};
@@ -176,58 +186,97 @@ const FileView = React.createClass({
                 fileTree = folderMap[folder.id];
             }
         });
-        this.state.data.files.map(file => {
+        data.files.map(file => {
+            file.url = data.download_host + file.filename + '?attname=' + file.display_name;
+            file.size = filesize(file.size);
+            file.icon = fileicon.processFile(file.filename);
+            file.created_at = processTime(file.created_at);
+            file.updated_at = processTime(file.updated_at);
             if (folderMap.hasOwnProperty(file.folder_id)) {
                 folderMap[file.folder_id].files.push(file);
             }
         });
+        fileTree.text = data.course.name;
         fileTree.state = {
             opened: true
         };
+        data.course.sync_time = processTime(data.course.sync_time, 'YYYY-MM-DD HH:mm:ss');
         console.log(fileTree);
-        this.setState({
+        return $.extend({
             fileTree: fileTree,
             folderMap: folderMap,
             currentFolderId: fileTree.id
-        });
+        }, data);
+    },
+    callbackChangeFolder: function (id) {
+        if (this.state.folderMap.hasOwnProperty(id)) {
+            for (let i in this.state.folderMap) {
+                this.state.folderMap[i].children = this.state.folderMap[i].__children;
+            }
+            this.setState({currentFolderId: id});
+        }
     },
     render: function () {
+        let folder;
+        let parentFolder = {};
+        if (this.state.currentFolderId) {
+            folder = this.state.folderMap[this.state.currentFolderId];
+            if (folder.parent_folder_id) {
+                parentFolder = this.state.folderMap[folder.parent_folder_id];
+            }
+        } else {
+            folder = this.props.fileTree;
+        }
         return (
             <div className="row">
-                <div className="col-sm-4">
+                <div className="col-sm-3">
                     <CourseSelect courses={this.props.courses}/>
-                    <FileTree fileTree={this.state.fileTree}/>
+                    <FileTree callbackChangeFolder={this.callbackChangeFolder} fileTree={this.state.fileTree}/>
                 </div>
-                <div className="col-sm-8">
-                    <FileList folder={this.state.currentFolderId ?
-                        this.state.folderMap[this.state.currentFolderId] : this.props.fileTree}/>
+                <div className="col-sm-9">
+                    <h5>Last Sync Time: {this.state.course.sync_time || 'Unknown'}</h5>
+                    <FileList callbackChangeFolder={this.callbackChangeFolder}
+                              folder={folder} parentFolder={parentFolder}/>
                 </div>
             </div>
         )
     },
     componentDidMount: function () {
-        this.processData();
+        //this.processData();
+        $.ajax({
+            url: '/data/course?id=1',
+            type: 'GET',
+            dataType: 'json',
+            success: data => {
+                data = this.processData(data);
+                console.log(data);
+                this.setState(data);
+            }
+        });
+    },
+    componentDidUpdate: function () {
+
     }
 });
 
 const App = React.createClass({
+    getInitialState: function () {
+        return {
+            course: {},
+            files: [],
+            folders: []
+        }
+    },
     render: function () {
         return (
             <div className="app-body container">
                 <Header/>
-                <FileView ref="fileView"/>
+                <FileView/>
             </div>
         );
     },
-
     componentDidMount: function () {
-        /*setTimeout(() => {
-         this.refs.fileView.setState({
-         data: {
-         files: [1, 2]
-         }
-         })
-         }, 1000);*/
+
     }
 
 });

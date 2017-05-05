@@ -22,6 +22,7 @@
   "qiniu": {
     "access_key": "4i3M7UI6dvei2p9XUiaZkBs4M0B0tGOTN3k34dv-",
     "secret_key": "5COzGhGwh2PKrT_7Jbmj1ngMcC9h--8i4xUiG_QR",
-    "bucket": "canvas-file-sync"
+    "bucket": "canvas-file-sync",
+    "host": "http://op0u0apne.bkt.clouddn.com/"
   }
 }
