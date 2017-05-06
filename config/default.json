@@ -25,7 +25,8 @@
     "bucket": "canvas-file-sync",
     "host": "http://op0u0apne.bkt.clouddn.com/"
   },
-  "async": {
-    "parallel_limit": 5
+  "sync": {
+    "parallel_limit": 5,
+    "auto_sync_interval": 60
   }
 }

@@ -9,6 +9,7 @@ const fs = require('fs');
 if (!fs.existsSync('./temp_files')) fs.mkdirSync('./temp_files');
 
 let first = true;
+let begin_listen = false;
 
 async.forever(
     async function (next) {
@@ -19,9 +20,14 @@ async.forever(
         let course_id = await sync.getFirstOfQueue();
 
         if (course_id < 0) {
-            setTimeout(next, 10000);
+            if (begin_listen) {
+                sync.beginListen();
+                begin_listen = false;
+            }
+            setTimeout(next, 1000);
             return;
         }
+        begin_listen = true;
 
         let error = await sync.syncCourse(course_id);
         if (!error) await sync.removeCourseInQueue(course_id);
