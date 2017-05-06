@@ -211,12 +211,14 @@ const FileView = React.createClass({
         fileTree.state = {
             opened: true,
         };
+        data.course.last_sync_time = data.course.sync_time;
         data.course.sync_time = processTime(data.course.sync_time, 'YYYY-MM-DD HH:mm:ss');
         console.log(fileTree);
         return $.extend({
             fileTree: fileTree,
             folderMap: folderMap,
-            currentFolderId: fileTree.id
+            currentFolderId: fileTree.id,
+            sync: false
         }, data);
     },
     callbackChangeFolder: function (id) {
@@ -226,9 +228,6 @@ const FileView = React.createClass({
         if (!id || this.state.currentFolderId === id)return;
         if (this.state.folderMap.hasOwnProperty(id)) {
             this.processing = true;
-            for (let i in this.state.folderMap) {
-                this.state.folderMap[i].children = this.state.folderMap[i].__children;
-            }
             let fileTree = this.refs.fileTree;
             let jstree = $(fileTree.refs.fileTree).jstree(true);
             jstree.deselect_all();
@@ -236,6 +235,29 @@ const FileView = React.createClass({
             jstree.open_node(id);
             this.setState({currentFolderId: id});
             this.processing = false;
+        }
+    },
+    onSyncClick: function () {
+        $.ajax({
+            url: '/data/sync',
+            data: {
+                id: this.state.course.id,
+                time: Date.parse(this.state.course.last_sync_time)
+            },
+            type: 'GET',
+            dataType: 'json',
+            success: data => {
+                if (data.state == 0 && !this.state.sync) {
+                    this.setState({sync: true});
+                } else if (data.state == 1) {
+                    this.refreshTree(this.state.course.id);
+                }
+            }
+        });
+    },
+    componentWillUpdate:function () {
+        for (let i in this.state.folderMap) {
+            this.state.folderMap[i].children = this.state.folderMap[i].__children;
         }
     },
     render: function () {
@@ -257,18 +279,24 @@ const FileView = React.createClass({
                               ref="fileTree"/>
                 </div>
                 <div className="col-sm-9">
-                    <h5>Last Sync Time: {this.state.course.sync_time || 'Unknown'}</h5>
+                    <div>
+                        <h5>Last Sync Time: {this.state.course.sync_time || 'Unknown'}</h5>
+                        <a onClick={this.onSyncClick}>
+                            <i className={"fa fa-refresh " + (this.state.sync ? "fa-spin" : "")}></i>
+                        </a>
+                    </div>
                     <FileList callbackChangeFolder={this.callbackChangeFolder}
                               folder={folder} parentFolder={parentFolder}/>
                 </div>
             </div>
         )
     },
-    componentDidMount: function () {
-        this.processing = false;
-        //this.processData();
+    refreshTree: function (course_id) {
         $.ajax({
-            url: '/data/course?id=1',
+            url: '/data/course',
+            data: {
+                id: course_id
+            },
             type: 'GET',
             dataType: 'json',
             success: data => {
@@ -277,6 +305,10 @@ const FileView = React.createClass({
                 this.setState(data);
             }
         });
+    },
+    componentDidMount: function () {
+        this.processing = false;
+        this.refreshTree(1);
     },
     componentDidUpdate: function () {
 

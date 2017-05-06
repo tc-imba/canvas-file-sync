@@ -15252,12 +15252,14 @@ var FileView = React.createClass({
         fileTree.state = {
             opened: true
         };
+        data.course.last_sync_time = data.course.sync_time;
         data.course.sync_time = processTime(data.course.sync_time, 'YYYY-MM-DD HH:mm:ss');
         console.log(fileTree);
         return $.extend({
             fileTree: fileTree,
             folderMap: folderMap,
-            currentFolderId: fileTree.id
+            currentFolderId: fileTree.id,
+            sync: false
         }, data);
     },
     callbackChangeFolder: function callbackChangeFolder(id) {
@@ -15267,9 +15269,6 @@ var FileView = React.createClass({
         if (!id || this.state.currentFolderId === id) return;
         if (this.state.folderMap.hasOwnProperty(id)) {
             this.processing = true;
-            for (var i in this.state.folderMap) {
-                this.state.folderMap[i].children = this.state.folderMap[i].__children;
-            }
             var fileTree = this.refs.fileTree;
             var jstree = $(fileTree.refs.fileTree).jstree(true);
             jstree.deselect_all();
@@ -15277,6 +15276,31 @@ var FileView = React.createClass({
             jstree.open_node(id);
             this.setState({ currentFolderId: id });
             this.processing = false;
+        }
+    },
+    onSyncClick: function onSyncClick() {
+        var _this3 = this;
+
+        $.ajax({
+            url: '/data/sync',
+            data: {
+                id: this.state.course.id,
+                time: Date.parse(this.state.course.last_sync_time)
+            },
+            type: 'GET',
+            dataType: 'json',
+            success: function success(data) {
+                if (data.state == 0 && !_this3.state.sync) {
+                    _this3.setState({ sync: true });
+                } else if (data.state == 1) {
+                    _this3.refreshTree(_this3.state.course.id);
+                }
+            }
+        });
+    },
+    componentWillUpdate: function componentWillUpdate() {
+        for (var i in this.state.folderMap) {
+            this.state.folderMap[i].children = this.state.folderMap[i].__children;
         }
     },
     render: function render() {
@@ -15304,31 +15328,45 @@ var FileView = React.createClass({
                 'div',
                 { className: 'col-sm-9' },
                 React.createElement(
-                    'h5',
+                    'div',
                     null,
-                    'Last Sync Time: ',
-                    this.state.course.sync_time || 'Unknown'
+                    React.createElement(
+                        'h5',
+                        null,
+                        'Last Sync Time: ',
+                        this.state.course.sync_time || 'Unknown'
+                    ),
+                    React.createElement(
+                        'a',
+                        { onClick: this.onSyncClick },
+                        React.createElement('i', { className: "fa fa-refresh " + (this.state.sync ? "fa-spin" : "") })
+                    )
                 ),
                 React.createElement(FileList, { callbackChangeFolder: this.callbackChangeFolder,
                     folder: folder, parentFolder: parentFolder })
             )
         );
     },
-    componentDidMount: function componentDidMount() {
-        var _this3 = this;
+    refreshTree: function refreshTree(course_id) {
+        var _this4 = this;
 
-        this.processing = false;
-        //this.processData();
         $.ajax({
-            url: '/data/course?id=1',
+            url: '/data/course',
+            data: {
+                id: course_id
+            },
             type: 'GET',
             dataType: 'json',
             success: function success(data) {
-                data = _this3.processData(data);
+                data = _this4.processData(data);
                 console.log(data);
-                _this3.setState(data);
+                _this4.setState(data);
             }
         });
+    },
+    componentDidMount: function componentDidMount() {
+        this.processing = false;
+        this.refreshTree(1);
     },
     componentDidUpdate: function componentDidUpdate() {}
 });

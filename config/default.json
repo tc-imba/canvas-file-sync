@@ -24,5 +24,8 @@
     "secret_key": "5COzGhGwh2PKrT_7Jbmj1ngMcC9h--8i4xUiG_QR",
     "bucket": "canvas-file-sync",
     "host": "http://op0u0apne.bkt.clouddn.com/"
+  },
+  "async": {
+    "parallel_limit": 5
   }
 }

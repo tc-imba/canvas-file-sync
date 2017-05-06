@@ -6,11 +6,7 @@ const router = express.Router();
 const database = require('../lib/database');
 const config = require('config');
 
-router.get('/', async (req, res, next) => {
-
-});
-
-router.get('/course', async (req, res, next) => {
+async function getCourse(req) {
     let response = {};
     let course;
     if (!req.query.id) {
@@ -27,16 +23,56 @@ router.get('/course', async (req, res, next) => {
         });
     }
     if (course) {
-        response.download_host = config.get('qiniu.host');
         response.course = course;
-        await database.select('*').from('file').orderBy('display_name', 'asc').where({course_id: course.id}).then(rows => {
-            response.files = rows;
-            return database.select('*').from('folder').orderBy('name', 'asc').where({course_id: course.id});
-        }).then(rows => {
-            response.folders = rows;
-        }).catch(error => {
-            response.error = error;
-        });
+    }
+    return response;
+}
+
+router.get('/', async (req, res, next) => {
+
+});
+
+router.get('/course', async (req, res, next) => {
+    let response = await getCourse(req);
+    if (response.course) {
+        response.download_host = config.get('qiniu.host');
+        await database.select('*').from('file').orderBy('display_name', 'asc')
+            .where({course_id: response.course.id}).then(rows => {
+                response.files = rows;
+                return database.select('*').from('folder').orderBy('name', 'asc').where({course_id: response.course.id});
+            }).then(rows => {
+                response.folders = rows;
+            }).catch(error => {
+                response.error = error;
+            });
+    }
+    res.send(response);
+});
+
+router.get('/sync', async (req, res, next) => {
+    let response = await getCourse(req);
+    if (response.course) {
+        if (req.query.time) {
+            const last_time = req.query.time;
+            const new_time = Date.parse(response.course.sync_time);
+            console.log(last_time, new_time);
+            if (last_time && new_time && last_time < new_time) {
+                response.state = 1; // Refresh now
+            }
+        }
+        if (!response.state) {
+            await database.select('*').from('queue').where('course_id', response.course.id).then(rows => {
+                if (rows.length > 0) {
+                    response.state = 0; // In the queue
+                } else {
+                    return database('queue').insert({course_id: response.course.id});
+                }
+            }).then(data => {
+                response.state = 0; // In the queue
+            }).catch(error => {
+                response.error = error;
+            });
+        }
     }
     res.send(response);
 });
