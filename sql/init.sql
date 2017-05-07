@@ -1,8 +1,8 @@
--- MySQL dump 10.16  Distrib 10.1.21-MariaDB, for Win32 (AMD64)
+-- MySQL dump 10.13  Distrib 5.7.18, for Linux (x86_64)
 --
--- Host: 127.0.0.1    Database: 127.0.0.1
+-- Host: 127.0.0.1    Database: canvas_file_sync
 -- ------------------------------------------------------
--- Server version	10.1.21-MariaDB
+-- Server version	5.7.18-0ubuntu0.16.10.1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -38,7 +38,7 @@ CREATE TABLE `course` (
 
 LOCK TABLES `course` WRITE;
 /*!40000 ALTER TABLE `course` DISABLE KEYS */;
-INSERT INTO `course` VALUES (1,'测试课程','测试课程','2017-05-06 09:07:58','2017-05-06 09:07:58');
+INSERT INTO `course` VALUES (1,'通用课程','VE202','2017-05-06 14:12:13','2017-05-06 14:12:13');
 /*!40000 ALTER TABLE `course` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -148,7 +148,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (2,'Canvas User','CKwEFKpRvqy0xXzO6Qi1NNnBUX1EP1U9kMBaaUU7O08QHtOSnXApa0C4ARi7dVlX','8go7njnMecEA1yZlbNQ2r11MCEIfSkhbceVBocYTGs9OtlXhQceAAm5JK8ac7BoD',3600,'2017-05-06 08:29:38');
+INSERT INTO `user` VALUES (2,'Canvas User','qtHBWSpKzk15KE9xYJrSs6gHuZfPfwYosiqbUD1FInyD0V2YeHv4VdLLr0LwNiTA','8go7njnMecEA1yZlbNQ2r11MCEIfSkhbceVBocYTGs9OtlXhQceAAm5JK8ac7BoD',3600,'2017-05-06 14:17:38');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -185,4 +185,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-05-06 17:10:33
+-- Dump completed on 2017-05-06 22:23:12
