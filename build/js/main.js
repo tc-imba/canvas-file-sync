@@ -15331,15 +15331,22 @@ var FileView = React.createClass({
                     'div',
                     null,
                     React.createElement(
-                        'h5',
+                        'div',
                         null,
                         'Last Sync Time: ',
-                        this.state.course.sync_time || 'Unknown'
+                        this.state.course.sync_time || 'Unknown',
+                        '\xA0'
                     ),
                     React.createElement(
                         'a',
                         { onClick: this.onSyncClick },
                         React.createElement('i', { className: "fa fa-refresh " + (this.state.sync ? "fa-spin" : "") })
+                    ),
+                    React.createElement(
+                        'div',
+                        null,
+                        '\xA0',
+                        this.state.sync ? "Syncing" : ""
                     )
                 ),
                 React.createElement(FileList, { callbackChangeFolder: this.callbackChangeFolder,

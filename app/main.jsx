@@ -255,7 +255,7 @@ const FileView = React.createClass({
             }
         });
     },
-    componentWillUpdate:function () {
+    componentWillUpdate: function () {
         for (let i in this.state.folderMap) {
             this.state.folderMap[i].children = this.state.folderMap[i].__children;
         }
@@ -280,10 +280,11 @@ const FileView = React.createClass({
                 </div>
                 <div className="col-sm-9">
                     <div>
-                        <h5>Last Sync Time: {this.state.course.sync_time || 'Unknown'}</h5>
+                        <div>Last Sync Time: {this.state.course.sync_time || 'Unknown'}&nbsp;</div>
                         <a onClick={this.onSyncClick}>
                             <i className={"fa fa-refresh " + (this.state.sync ? "fa-spin" : "")}></i>
                         </a>
+                        <div>&nbsp;{this.state.sync ? "Syncing" : ""}</div>
                     </div>
                     <FileList callbackChangeFolder={this.callbackChangeFolder}
                               folder={folder} parentFolder={parentFolder}/>
