@@ -285,7 +285,7 @@ const FileView = React.createClass({
     onSyncClick: function () {
         this.setState({sync: true});
         const timestamp = this.timestamp = new Date();
-        const times = 10;
+        const times = 30;
         const interval = 2000;
         let i = 0;
         let loop = setInterval(
