@@ -15002,8 +15002,27 @@ var CourseSelect = React.createClass({
         );
     },
     componentDidMount: function componentDidMount() {
+        var _this = this;
+
         $(this.refs.select).select2({
             data: this.props.courses,
+            placeholder: "Please select a course",
+            allowClear: true
+        }).on("select2:select", function (e) {
+            //console.log(e);
+            _this.props.callbackChangeCourse(e.params.data.id);
+        });
+    },
+    componentDidUpdate: function componentDidUpdate() {
+        var data = [];
+        this.props.courses.map(function (course) {
+            data.push({
+                id: course.id,
+                text: course.course_code + ' ' + course.name
+            });
+        });
+        $(this.refs.select).select2({
+            data: data,
             placeholder: "Please select a course",
             allowClear: true
         });
@@ -15026,19 +15045,19 @@ var FileTree = React.createClass({
         return React.createElement('div', { ref: 'fileTree' });
     },
     componentDidMount: function componentDidMount() {
-        var _this = this;
+        var _this2 = this;
 
         var $fileTree = $(this.refs.fileTree);
         $fileTree.jstree({
             'core': {
                 'data': function data(node, callback) {
-                    callback(_this.props.fileTree);
+                    callback(_this2.props.fileTree);
                 },
                 worker: false
             }
         }).on('select_node.jstree', function (e, selected) {
             //console.log(selected);
-            _this.props.callbackChangeFolder(selected.node.id);
+            _this2.props.callbackChangeFolder(selected.node.id);
         });
 
         console.log("Tree init");
@@ -15144,7 +15163,7 @@ var FileList = React.createClass({
     displayName: 'FileList',
 
     render: function render() {
-        var _this2 = this;
+        var _this3 = this;
 
         return React.createElement(
             'table',
@@ -15183,7 +15202,7 @@ var FileList = React.createClass({
                 this.props.parentFolder.id ? React.createElement(Folder, { callbackChangeFolder: this.props.callbackChangeFolder, folder: this.props.parentFolder,
                     parent: true }) : '',
                 this.props.folder.children ? this.props.folder.children.map(function (folder) {
-                    return React.createElement(Folder, { callbackChangeFolder: _this2.props.callbackChangeFolder, folder: folder });
+                    return React.createElement(Folder, { callbackChangeFolder: _this3.props.callbackChangeFolder, folder: folder });
                 }) : '',
                 this.props.folder.files ? this.props.folder.files.map(function (file) {
                     return React.createElement(File, { file: file });
@@ -15263,7 +15282,8 @@ var FileView = React.createClass({
             fileTree: fileTree,
             folderMap: folderMap,
             currentFolderId: fileTree.id,
-            sync: false
+            sync: false,
+            error: false
         }, data);
     },
     callbackChangeFolder: function callbackChangeFolder(id) {
@@ -15282,8 +15302,12 @@ var FileView = React.createClass({
             this.processing = false;
         }
     },
+    callbackChangeCourse: function callbackChangeCourse(course_id) {
+        this.processing = false;
+        this.refreshTree(course_id);
+    },
     onSyncClick: function onSyncClick() {
-        var _this3 = this;
+        var _this4 = this;
 
         $.ajax({
             url: '/data/sync',
@@ -15294,10 +15318,10 @@ var FileView = React.createClass({
             type: 'GET',
             dataType: 'json',
             success: function success(data) {
-                if (data.state == 0 && !_this3.state.sync) {
-                    _this3.setState({ sync: true });
+                if (data.state == 0 && !_this4.state.sync) {
+                    _this4.setState({ sync: true });
                 } else if (data.state == 1) {
-                    _this3.refreshTree(_this3.state.course.id);
+                    _this4.refreshTree(_this4.state.course.id);
                 }
             }
         });
@@ -15318,52 +15342,68 @@ var FileView = React.createClass({
         } else {
             folder = this.props.fileTree;
         }
+
+        var no_error = [React.createElement(
+            'div',
+            { className: 'mb-3' },
+            React.createElement(
+                'span',
+                null,
+                'Last Sync Time: ',
+                this.state.course.sync_time || 'Unknown',
+                '\xA0'
+            ),
+            '(Thanks to the data provided by ',
+            this.state.course.sync_user_name,
+            ')',
+            React.createElement(
+                'span',
+                { className: 'float-right' },
+                React.createElement(
+                    'a',
+                    { onClick: this.onSyncClick },
+                    React.createElement('i', { className: "fa fa-refresh " + (this.state.sync ? "fa-spin" : "") })
+                ),
+                '\xA0',
+                this.state.sync ? "Syncing" : "Sync now"
+            )
+        ), React.createElement(FileList, { callbackChangeFolder: this.callbackChangeFolder,
+            folder: folder, parentFolder: parentFolder })];
+
+        var error = [React.createElement(
+            'h4',
+            null,
+            'Sorry, we currently haven\'t data for the course'
+        ), React.createElement(
+            'div',
+            null,
+            'Error: ',
+            this.state.error
+        )];
+
         return React.createElement(
             'div',
             { className: 'row' },
             React.createElement(
                 'div',
                 { className: 'col-sm-3' },
-                React.createElement(CourseSelect, { courses: this.props.courses }),
+                React.createElement(CourseSelect, { courses: this.props.courses, callbackChangeCourse: this.callbackChangeCourse }),
                 React.createElement(FileTree, { callbackChangeFolder: this.callbackChangeFolder, fileTree: this.state.fileTree,
                     ref: 'fileTree' })
             ),
             React.createElement(
                 'div',
                 { className: 'col-sm-9' },
-                React.createElement(
-                    'div',
-                    null,
-                    React.createElement(
-                        'span',
-                        null,
-                        'Last Sync Time: ',
-                        this.state.course.sync_time || 'Unknown',
-                        '\xA0'
-                    ),
-                    '(Thanks to the data provided by ',
-                    this.state.course.sync_user_name,
-                    ')',
-                    React.createElement(
-                        'span',
-                        { className: 'float-right' },
-                        React.createElement(
-                            'a',
-                            { onClick: this.onSyncClick },
-                            React.createElement('i', { className: "fa fa-refresh " + (this.state.sync ? "fa-spin" : "") })
-                        ),
-                        '\xA0',
-                        this.state.sync ? "Syncing" : "Sync now"
-                    )
-                ),
-                React.createElement(FileList, { callbackChangeFolder: this.callbackChangeFolder,
-                    folder: folder, parentFolder: parentFolder })
+                this.state.error ? error : no_error
             )
         );
     },
     refreshTree: function refreshTree(course_id) {
-        var _this4 = this;
+        var _this5 = this;
 
+        var callbackError = function callbackError(data) {
+            _this5.setState({ error: JSON.stringify(data, null, '    ') });
+        };
         $.ajax({
             url: '/data/course',
             data: {
@@ -15372,15 +15412,20 @@ var FileView = React.createClass({
             type: 'GET',
             dataType: 'json',
             success: function success(data) {
-                data = _this4.processData(data);
+                if (data.course) {
+                    data = _this5.processData(data);
+                    _this5.setState(data);
+                } else {
+                    callbackError(data);
+                }
                 console.log(data);
-                _this4.setState(data);
-            }
+            },
+            error: callbackError
         });
     },
     componentDidMount: function componentDidMount() {
-        this.processing = false;
-        this.refreshTree(1);
+        //this.processing = false;
+        //this.refreshTree(1);
     },
     componentDidUpdate: function componentDidUpdate() {}
 });
@@ -15402,15 +15447,15 @@ var App = React.createClass({
         );
     },
     componentDidMount: function componentDidMount() {
-        var _this5 = this;
+        var _this6 = this;
 
         $.ajax({
-            url: '/static/courses.json',
+            url: '/public/courses.json',
             type: 'GET',
             dataType: 'json',
             success: function success(data) {
                 console.log(data);
-                _this5.setState({ courses: data });
+                _this6.setState({ courses: data });
             }
         });
     }

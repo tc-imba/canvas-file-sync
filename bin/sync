@@ -7,8 +7,9 @@ const sync = require('../lib/sync');
 const pify = require('pify');
 const async = require('neo-async');
 const fs = require('fs');
+const utils = require('../lib/utils');
 
-if (!fs.existsSync('./temp_files')) fs.mkdirSync('./temp_files');
+if (!fs.existsSync(utils.local_file_dir)) fs.mkdirSync(utils.local_file_dir);
 
 let first = true;
 let begin_listen = false;

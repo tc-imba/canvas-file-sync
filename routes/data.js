@@ -3,10 +3,10 @@
  */
 const express = require('express');
 const router = express.Router();
-const database = require('../lib/utils').database;
+const utils = require('../lib/utils');
+const database = utils.database;
 const sync = require('../lib/sync');
 const config = require('config');
-
 
 async function getCourse(req) {
     let response = {};
@@ -47,7 +47,11 @@ router.get('/course', async (req, res, next) => {
         } else {
             response.sync = false;
         }
-        response.download_host = config.get('qiniu.host');
+        if (config.has('qiniu.enable') && config.get('qiniu.enable')) {
+            response.download_host = config.get('qiniu.host');
+        } else if (!config.has('sync.preserve_local_file') || config.get('sync.preserve_local_file')) {
+            response.download_host = utils.base_url + 'files/';
+        }
         await database.select('*').from('file').orderBy('display_name', 'asc')
             .where({course_id: response.course.id}).then(rows => {
                 response.files = rows;
