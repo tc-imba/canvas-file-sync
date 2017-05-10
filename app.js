@@ -4,6 +4,11 @@ if (process.version < 'v7.6.0') {
     require('babel-polyfill');
 }
 
+setTimeout(async function () {
+    const user = require('./lib/user');
+    await user.generateCourseInfo();
+}, 0);
+
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
