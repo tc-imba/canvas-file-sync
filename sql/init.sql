@@ -2,7 +2,7 @@
 --
 -- Host: 127.0.0.1    Database: canvas_file_sync
 -- ------------------------------------------------------
--- Server version	5.7.18-0ubuntu0.16.10.1
+-- Server version	5.7.18-0ubuntu0.17.04.1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -26,8 +26,8 @@ CREATE TABLE `course` (
   `id` int(11) NOT NULL,
   `name` varchar(255) DEFAULT NULL,
   `course_code` varchar(255) DEFAULT NULL,
-  `timestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `sync_time` timestamp NULL DEFAULT NULL,
+  `sync_user_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -38,7 +38,7 @@ CREATE TABLE `course` (
 
 LOCK TABLES `course` WRITE;
 /*!40000 ALTER TABLE `course` DISABLE KEYS */;
-INSERT INTO `course` VALUES (1,'通用课程','VE202','2017-05-06 14:12:13','2017-05-06 14:12:13');
+INSERT INTO `course` VALUES (1,'通用课程','VE202','2017-05-10 17:39:45',2);
 /*!40000 ALTER TABLE `course` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -148,7 +148,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (2,'Canvas User','qtHBWSpKzk15KE9xYJrSs6gHuZfPfwYosiqbUD1FInyD0V2YeHv4VdLLr0LwNiTA','8go7njnMecEA1yZlbNQ2r11MCEIfSkhbceVBocYTGs9OtlXhQceAAm5JK8ac7BoD',3600,'2017-05-06 14:17:38');
+INSERT INTO `user` VALUES (2,'Canvas User','KMly40tZpoK2lyCoaPN0b84JZo7kbsWfzLxOZVEaLdKfdQeeoO7OoCcWAD2dSsHI','8go7njnMecEA1yZlbNQ2r11MCEIfSkhbceVBocYTGs9OtlXhQceAAm5JK8ac7BoD',3600,'2017-05-10 16:52:50');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -185,4 +185,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-05-06 22:23:12
+-- Dump completed on 2017-05-11  1:41:08

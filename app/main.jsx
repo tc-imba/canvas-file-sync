@@ -7,6 +7,7 @@ const $ = require('jquery');
 const filesize = require('filesize');
 const fileicon = require('../lib/file-icon');
 const sillydatetime = require('silly-datetime');
+const async = require('neo-async');
 
 require('bootstrap-loader');
 require('font-awesome-webpack');
@@ -18,7 +19,21 @@ require('select2/dist/css/select2.css');
 
 const Header = React.createClass({
     render: () =>
-        <h1 className="text-center mt-3 mb-3">Canvas File Sync</h1>
+        <div className="container mb-3">
+            <nav className="navbar navbar-toggleable-md navbar-light bg-faded">
+                <a className="navbar-brand" href="/">Canvas File Sync</a>
+                <div className="collapse navbar-collapse">
+                    <ul className="navbar-nav mr-auto">
+                    </ul>
+                    <ul className="navbar-nav">
+                        <li className="nav-item">
+                            <a className="nav-link" href="/auth">Grant Privilege</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+
 });
 
 const CourseSelect = React.createClass({
@@ -240,6 +255,7 @@ const FileView = React.createClass({
             folderMap: folderMap,
             currentFolderId: fileTree.id,
             sync: false,
+            sync_timeout: false,
             error: false,
             first: false
         }, data);
@@ -261,26 +277,54 @@ const FileView = React.createClass({
         }
     },
     callbackChangeCourse: function (course_id) {
-        this.processing = false;
-        this.refreshTree(course_id);
+        if (course_id !== this.state.course.id) {
+            this.processing = false;
+            this.refreshTree(course_id);
+        }
     },
     onSyncClick: function () {
-        $.ajax({
-            url: '/data/sync',
-            data: {
-                id: this.state.course.id,
-                time: Date.parse(this.state.course.last_sync_time)
-            },
-            type: 'GET',
-            dataType: 'json',
-            success: data => {
-                if (data.state == 0 && !this.state.sync) {
-                    this.setState({sync: true});
-                } else if (data.state == 1) {
-                    this.refreshTree(this.state.course.id);
+        this.setState({sync: true});
+        const timestamp = this.timestamp = new Date();
+        const times = 10;
+        const interval = 2000;
+        let i = 0;
+        let loop = setInterval(
+            () => {
+                if (timestamp !== this.timestamp) {
+                    // Course changed
+                    window.clearInterval(loop);
+                    return;
                 }
-            }
-        });
+                if (++i === times) {
+                    window.clearInterval(loop);
+                    this.setState({sync: false, sync_timeout: true});
+                    return;
+                }
+                $.ajax({
+                    url: '/data/sync',
+                    data: {
+                        id: this.state.course.id,
+                        time: Date.parse(this.state.course.last_sync_time)
+                    },
+                    type: 'GET',
+                    dataType: 'json',
+                    success: data => {
+                        if (timestamp !== this.timestamp) {
+                            // Course changed
+                            window.clearInterval(loop);
+                            return;
+                        }
+                        if (data.state == 0 && !this.state.sync) {
+
+                        } else if (data.state == 1) {
+                            this.refreshTree(this.state.course.id, true);
+                            window.clearInterval(loop);
+                        }
+                    }
+                });
+            },
+            interval
+        );
     },
     componentWillUpdate: function () {
         for (let i in this.state.folderMap) {
@@ -303,11 +347,18 @@ const FileView = React.createClass({
             <div className="jumbotron">
                 <h1 className="display-3">Canvas File Sync</h1>
                 <p className="lead">
-                    Canvas File Sync is created by tc-imba, in order to sync all files on Canvas LMS with the help of access token providers.
+                    Canvas File Sync is created by tc-imba, in order to sync all files on Canvas LMS with the help of
+                    access token providers.
                 </p>
-
+                <hr className="my-4"/>
+                <p>
+                    If you'd like to contribute, grant privilege to us in the button below.
+                </p>
+                <p className="lead">
+                    <a className="btn btn-primary btn-lg" href="/auth" role="button">Grant Privilege</a>
+                </p>
             </div>
-         ];
+        ];
 
         const no_error = [
             <div className="mb-3">
@@ -315,7 +366,8 @@ const FileView = React.createClass({
                 (Thanks to the data provided by {this.state.course.sync_user_name})
                 <span className="float-right"><a onClick={this.onSyncClick}>
                             <i className={"fa fa-refresh " + (this.state.sync ? "fa-spin" : "")}></i>
-                        </a>&nbsp;{this.state.sync ? "Syncing" : "Sync now"}</span>
+                        </a>&nbsp;{this.state.sync ? "Syncing" : this.state.sync_timeout ? "Sync timeout" :
+                    this.state.sync_success ? "Synced" : "Sync now"}</span>
             </div>,
             <FileList callbackChangeFolder={this.callbackChangeFolder}
                       folder={folder} parentFolder={parentFolder}/>
@@ -330,8 +382,11 @@ const FileView = React.createClass({
             <div className="row">
                 <div className="col-sm-3">
                     <CourseSelect courses={this.props.courses} callbackChangeCourse={this.callbackChangeCourse}/>
-                    <FileTree callbackChangeFolder={this.callbackChangeFolder} fileTree={this.state.fileTree}
-                              ref="fileTree"/>
+                    {
+                        this.state.error || this.state.first ? "" :
+                            <FileTree callbackChangeFolder={this.callbackChangeFolder}
+                                      fileTree={this.state.fileTree} ref="fileTree"/>
+                    }
                 </div>
                 <div className="col-sm-9">
                     {this.state.error ? error : this.state.first ? first : no_error}
@@ -339,7 +394,7 @@ const FileView = React.createClass({
             </div>
         )
     },
-    refreshTree: function (course_id) {
+    refreshTree: function (course_id, sync_success = false) {
         const callbackError = data => {
             this.setState({error: JSON.stringify(data, null, '    ')});
         };
@@ -353,7 +408,9 @@ const FileView = React.createClass({
             success: data => {
                 if (data.course) {
                     data = this.processData(data);
+                    if (sync_success) data.sync_success = true;
                     this.setState(data);
+                    if (data.sync) this.onSyncClick();
                 } else {
                     callbackError(data);
                 }
@@ -379,11 +436,13 @@ const App = React.createClass({
     },
     render: function () {
         return (
-            <div className="app-body container">
-                <Header/>
-                <FileView courses={this.state.courses}/>
+            <div className="app">
+                <Header/>,
+                <div className="app-body container">
+                    <FileView courses={this.state.courses}/>
+                </div>
             </div>
-        );
+        )
     },
     componentDidMount: function () {
         $.ajax({

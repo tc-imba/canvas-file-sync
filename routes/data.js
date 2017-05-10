@@ -71,7 +71,7 @@ router.get('/sync', async (req, res, next) => {
         if (req.query.time) {
             const last_time = req.query.time;
             const new_time = Date.parse(response.course.sync_time);
-            console.log(last_time, new_time);
+            //console.log(last_time, new_time);
             if (last_time && new_time && last_time < new_time) {
                 response.state = 1; // Refresh now
             }
