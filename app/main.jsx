@@ -18,21 +18,23 @@ require('select2/dist/css/select2.css');
 
 const Header = React.createClass({
     render: () =>
-        <h1 className="text-center">Canvas File Sync</h1>
+        <h1 className="text-center mt-3 mb-3">Canvas File Sync</h1>
 });
 
 const CourseSelect = React.createClass({
     render: function () {
         return (
-            <select ref="select">
-                <option></option>
-            </select>
+            <div className="form-group">
+                <select className="form-control" ref="select">
+                    <option></option>
+                </select>
+            </div>
         )
     },
     componentDidMount: function () {
         $(this.refs.select).select2({
             data: this.props.courses,
-            placeholder: "---",
+            placeholder: "Please select a course",
             allowClear: true
         })
     }
@@ -280,11 +282,11 @@ const FileView = React.createClass({
                 </div>
                 <div className="col-sm-9">
                     <div>
-                        <div>Last Sync Time: {this.state.course.sync_time || 'Unknown'}&nbsp;</div>
-                        <a onClick={this.onSyncClick}>
+                        <span>Last Sync Time: {this.state.course.sync_time || 'Unknown'}&nbsp;</span>
+                        (Thanks to the data provided by {this.state.course.sync_user_name})
+                        <span className="float-right"><a onClick={this.onSyncClick}>
                             <i className={"fa fa-refresh " + (this.state.sync ? "fa-spin" : "")}></i>
-                        </a>
-                        <div>&nbsp;{this.state.sync ? "Syncing" : ""}</div>
+                        </a>&nbsp;{this.state.sync ? "Syncing" : "Sync now"}</span>
                     </div>
                     <FileList callbackChangeFolder={this.callbackChangeFolder}
                               folder={folder} parentFolder={parentFolder}/>
@@ -319,21 +321,27 @@ const FileView = React.createClass({
 const App = React.createClass({
     getInitialState: function () {
         return {
-            course: {},
-            files: [],
-            folders: []
+            courses: []
         }
     },
     render: function () {
         return (
             <div className="app-body container">
                 <Header/>
-                <FileView/>
+                <FileView courses={this.state.courses}/>
             </div>
         );
     },
     componentDidMount: function () {
-
+        $.ajax({
+            url: '/static/courses.json',
+            type: 'GET',
+            dataType: 'json',
+            success: data => {
+                console.log(data);
+                this.setState({courses: data});
+            }
+        });
     }
 
 });

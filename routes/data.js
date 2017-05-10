@@ -3,7 +3,7 @@
  */
 const express = require('express');
 const router = express.Router();
-const database = require('../lib/database');
+const database = require('../lib/utils').database;
 const sync = require('../lib/sync');
 const config = require('config');
 
@@ -14,15 +14,17 @@ async function getCourse(req) {
     if (!req.query.id) {
         response.error = 'No course id in query';
     } else {
-        await database.select('*').from('course').where({id: req.query.id}).then(rows => {
-            if (rows.length > 0 && rows[0].id == req.query.id) {
-                course = rows[0];
-            } else {
-                response.error = 'Course id not found';
-            }
-        }).catch(error => {
-            response.error = error;
-        });
+        await database.select('course.*', 'user.name AS sync_user_name').from('course')
+            .where({'course.id': req.query.id}).leftJoin('user', 'course.sync_user_id', 'user.id')
+            .then(rows => {
+                if (rows.length > 0 && rows[0].id == req.query.id) {
+                    course = rows[0];
+                } else {
+                    response.error = 'Course id not found';
+                }
+            }).catch(error => {
+                response.error = error;
+            });
     }
     if (course) {
         response.course = course;

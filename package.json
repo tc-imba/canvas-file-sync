@@ -14,6 +14,8 @@
     "stop:server": "pm2 stop canvas-file-sync-server",
     "stop:sync": "pm2 stop canvas-file-sync",
     "stop": "npm run stop:server && npm run stop:sync",
+    "restart:server": "npm run stop:server && npm run start:server",
+    "restart:sync": "npm run stop:sync && npm run start:sync",
     "monitor": "pm2 monit",
     "build:stable": "webpack -p --config ./webpack/vendor.stable.js",
     "build:app": "webpack -p --config ./webpack/main.js",

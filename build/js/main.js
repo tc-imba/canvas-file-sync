@@ -14981,7 +14981,7 @@ var Header = React.createClass({
     render: function render() {
         return React.createElement(
             'h1',
-            { className: 'text-center' },
+            { className: 'text-center mt-3 mb-3' },
             'Canvas File Sync'
         );
     }
@@ -14992,15 +14992,19 @@ var CourseSelect = React.createClass({
 
     render: function render() {
         return React.createElement(
-            'select',
-            { ref: 'select' },
-            React.createElement('option', null)
+            'div',
+            { className: 'form-group' },
+            React.createElement(
+                'select',
+                { className: 'form-control', ref: 'select' },
+                React.createElement('option', null)
+            )
         );
     },
     componentDidMount: function componentDidMount() {
         $(this.refs.select).select2({
             data: this.props.courses,
-            placeholder: "---",
+            placeholder: "Please select a course",
             allowClear: true
         });
     }
@@ -15331,22 +15335,25 @@ var FileView = React.createClass({
                     'div',
                     null,
                     React.createElement(
-                        'div',
+                        'span',
                         null,
                         'Last Sync Time: ',
                         this.state.course.sync_time || 'Unknown',
                         '\xA0'
                     ),
+                    '(Thanks to the data provided by ',
+                    this.state.course.sync_user_name,
+                    ')',
                     React.createElement(
-                        'a',
-                        { onClick: this.onSyncClick },
-                        React.createElement('i', { className: "fa fa-refresh " + (this.state.sync ? "fa-spin" : "") })
-                    ),
-                    React.createElement(
-                        'div',
-                        null,
+                        'span',
+                        { className: 'float-right' },
+                        React.createElement(
+                            'a',
+                            { onClick: this.onSyncClick },
+                            React.createElement('i', { className: "fa fa-refresh " + (this.state.sync ? "fa-spin" : "") })
+                        ),
                         '\xA0',
-                        this.state.sync ? "Syncing" : ""
+                        this.state.sync ? "Syncing" : "Sync now"
                     )
                 ),
                 React.createElement(FileList, { callbackChangeFolder: this.callbackChangeFolder,
@@ -15383,9 +15390,7 @@ var App = React.createClass({
 
     getInitialState: function getInitialState() {
         return {
-            course: {},
-            files: [],
-            folders: []
+            courses: []
         };
     },
     render: function render() {
@@ -15393,10 +15398,22 @@ var App = React.createClass({
             'div',
             { className: 'app-body container' },
             React.createElement(Header, null),
-            React.createElement(FileView, null)
+            React.createElement(FileView, { courses: this.state.courses })
         );
     },
-    componentDidMount: function componentDidMount() {}
+    componentDidMount: function componentDidMount() {
+        var _this5 = this;
+
+        $.ajax({
+            url: '/static/courses.json',
+            type: 'GET',
+            dataType: 'json',
+            success: function success(data) {
+                console.log(data);
+                _this5.setState({ courses: data });
+            }
+        });
+    }
 
 });
 
