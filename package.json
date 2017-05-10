@@ -19,7 +19,7 @@
     "monitor": "pm2 monit",
     "build:stable": "webpack -p --config ./webpack/vendor.stable.js",
     "build:app": "webpack -p --config ./webpack/main.js",
-    "build": "npm run build:stable && npm run build",
+    "build": "npm run build:stable && npm run build:app",
     "build:dev": "webpack --config ./webpack/main.js"
   },
   "dependencies": {
