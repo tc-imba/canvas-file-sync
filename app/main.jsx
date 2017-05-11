@@ -58,9 +58,13 @@ const CourseSelect = React.createClass({
     componentDidUpdate: function () {
         let data = [];
         this.props.courses.map(course => {
+            let text = course.course_code;
+            if (course.course_code !== course.name) {
+                text += ' ' + course.name;
+            }
             data.push({
                 id: course.id,
-                text: `${course.course_code} ${course.name}`
+                text: text
             });
         });
         $(this.refs.select).select2({
