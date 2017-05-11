@@ -7,7 +7,6 @@ const $ = require('jquery');
 const filesize = require('filesize');
 const fileicon = require('../lib/file-icon');
 const sillydatetime = require('silly-datetime');
-const async = require('neo-async');
 
 require('bootstrap-loader');
 require('font-awesome-webpack');

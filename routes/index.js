@@ -12,7 +12,7 @@ router.get('/', function (req, res, next) {
 });
 
 router.get('/auth', async (req, res, next) => {
-    const AUTH_URL = '/auth';
+    const AUTH_URL = 'auth';
     try {
         if (!req.query.code) {
             const authURL = oauth.getAuthorizeURL(AUTH_URL);
